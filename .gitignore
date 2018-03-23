@@ -6,3 +6,6 @@
 /pkg/
 /spec/reports/
 /tmp/
+bin/console
+bin/setup
+lib/ncurses/lyra.rb
