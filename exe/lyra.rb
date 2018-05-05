@@ -8,7 +8,7 @@ require 'ffi-ncurses/widechars'
 #       Author: j kepler  http://github.com/mare-imbrium/
 #         Date: 2018-03-09 
 #      License: MIT
-#  Last update: 2018-03-23 18:37
+#  Last update: 2018-05-05 12:40
 # ----------------------------------------------------------------------------- #
 #  lyra.rb  Copyright (C) 2012-2018 j kepler
 #  == TODO
@@ -546,6 +546,17 @@ end
   def statusline win, str
     win.printstring(win.height-1, 2, str, 1) # white on default
   end
+  def topline win, str, column = 0
+    # LINES-2 prints on second last line so that box can be seen
+    win.printstring( 0, 0, " "*(win.width), 6, REVERSE)
+    str.split("|").each_with_index {|s,ix|
+      _color = 5
+      _color = 6 if ix%2==0
+      win.printstring( 0,column, s, _color, REVERSE)
+      column += s.length+1
+    }
+  end
+
   def alert str 
     win = create_footer_window
     # 10 is too much BLACK on CYAN
@@ -606,18 +617,17 @@ end
 
 begin
   init_curses
-  txt = "Press cursor keys to move window"
   win = Window.new
   pointer = win.pointer
   $ht = win.height
   $wid = win.width
   $pagecols = $ht / 2
   $spacecols = $ht
-  #win.printstr txt
   win.printstr("Press Ctrl-Q to quit #{win.height}:#{win.width}", win.height-1, 20)
 
   path = File.expand_path("./")
-  win.printstring(0,0, "PATH: #{path}                 #{TOPLINE}",0)
+  #win.printstring(0,0, "PATH: #{path}                 #{TOPLINE}",0)
+  topline(win, "PATH: #{path}                 #{TOPLINE}",0)
   files = get_files
   current = 0
   prevstart = listing(win, path, files, current, 0)
@@ -638,7 +648,8 @@ begin
         $patt = nil
         path = Dir.pwd
         #win.printstring(0,0, "PATH: #{path}                 ",0)
-        win.printstring(0,0, "PATH: #{path}                 #{TOPLINE}",0)
+        #win.printstring(0,0, "PATH: #{path}                 #{TOPLINE}",0)
+        topline(win, "PATH: #{path}                 #{TOPLINE}",0)
         files = get_files
         current = 0
         FFI::NCurses.wclrtobot(pointer)
@@ -655,7 +666,8 @@ begin
       Dir.chdir("..")
       path = Dir.pwd
       $patt = nil
-      win.printstring(0,0, "PATH: #{path}                 #{TOPLINE}",0)
+      #win.printstring(0,0, "PATH: #{path}                 #{TOPLINE}",0)
+      topline(win, "PATH: #{path}                 #{TOPLINE}",0)
       files = get_files
       # when going up, keep focus on the dir we came from
       current = files.index(File.basename(oldpath) + "/")
@@ -671,7 +683,8 @@ begin
         $patt = nil
         path = Dir.pwd
         #win.printstring(0,0, "PATH: #{path}                 ",0)
-        win.printstring(0,0, "PATH: #{path}                 #{TOPLINE}",0)
+        #win.printstring(0,0, "PATH: #{path}                 #{TOPLINE}",0)
+      topline(win, "PATH: #{path}                 #{TOPLINE}",0)
         files = get_files
         #files = Dir.entries("./")
         #files.delete(".")
